@@ -1,24 +1,37 @@
 /* eslint-disable prettier/prettier */
 // BiometricScreen.js
-import React, {useState} from 'react';
-import {View, Text, TouchableOpacity} from 'react-native';
+import React, {useState,useEffect} from 'react';
+import {View, Text, TouchableOpacity,StyleSheet} from 'react-native';
 import ReactNativeBiometrics, {BiometryTypes} from 'react-native-biometrics';
 import MedButton from '../components/common/MedButton';
+import {useNavigation} from '@react-navigation/native';
 
 const BiometricScreen = () => {
+  console.log("before biot")
+    const [isAuthenticate, setIsAuthenticate] = useState(false);
+
   const rnBiometrics = new ReactNativeBiometrics();
   const [biometricType, setBiometricType] = useState(null);
+  const navigation = useNavigation<any>();
 
   const checkBiometrics = async () => {
+     console.log("before biometry")
     try {
       const {available, biometryType} = await rnBiometrics.isSensorAvailable();
-      if (available && biometryType) {
-        setBiometricType(biometryType);
+
+      if (available && biometryType === BiometryTypes.TouchID) {
+        console.log('TouchID is supported');
+      } else if (available && biometryType === BiometryTypes.FaceID) {
+        console.log('FaceID is supported');
+      } else if (available && biometryType === BiometryTypes.Biometrics) {
+        console.log('Biometrics is supported',biometryType);
+        // navigation.navigate('GetStarted')
       } else {
-        console.log('Biometrics not available on this device.');
+        console.log('Biometrics not supported');
       }
+
     } catch (error) {
-      console.error(error);
+        navigation.navigate('LoginPage')
     }
   };
 
@@ -29,36 +42,64 @@ const BiometricScreen = () => {
       });
 
       if (success) {
-        console.log('Biometric authentication successful!');
+         setIsAuthenticate(true)
+         navigation.navigate('SignUp')
       } else {
-        console.log('Biometric authentication failed or was cancelled.');
+        navigation.navigate('LoginPage')
       }
     } catch (error) {
       console.error(error);
+      navigation.navigate('SignUp')
     }
   };
 
-  return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Text>
-        {biometricType
-          ? `Biometric Type: ${biometricType}`
-          : 'Checking biometrics...'}
-      </Text>
-      <View  style={{ flex:1,flexDirection:'row',rowGap:10,justifyContent: 'space-evenly', alignItems: 'center'}}>
-      <View>
-        <MedButton title="CheckBiometrics" onPress={checkBiometrics} />
-      </View>
+  useEffect(() => {
+    // checkBiometrics()
+     if(!isAuthenticate){
+        authenticateBiometrics()
+     }
+  }, [])
 
-      <View>
-        <MedButton
-          title="Authenticate"
-          onPress={authenticateBiometrics}
-        />
-      </View>
-      </View>
+
+  return (
+    <View style={styles.container}>
+      {/* <Text style={styles.message}>Authenticate to access the page</Text> */}
+      {/* <Text style={styles.cancelButton} onPress={() => onAuthenticate(false)}>
+        Cancel
+      </Text>
+      <Text style={styles.authButton} onPress={handleBiometricAuth}>
+        Authenticate
+      </Text> */}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+    modal: {
+      margin: 0,
+      justifyContent: 'flex-end',
+    },
+    container: {
+      backgroundColor: 'white',
+      padding: 20,
+      borderTopLeftRadius: 10,
+      borderTopRightRadius: 10,
+    },
+    message: {
+      fontSize: 18,
+      marginBottom: 20,
+    },
+    cancelButton: {
+      fontSize: 16,
+      color: 'red',
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    authButton: {
+      fontSize: 16,
+      color: 'blue',
+      textAlign: 'center',
+    },
+  });
 
 export default BiometricScreen;

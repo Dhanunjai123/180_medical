@@ -37,6 +37,7 @@ export const MessageBadge = React.createContext(null as any);
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
 function App(): JSX.Element {
+
   const isDarkMode = useColorScheme() === 'dark';
   const [authHeader, setAuthHeader] = useState<string | null>(null);
   const [messageBadge, setMessageBadge] = useState<number | null>(0);
@@ -123,8 +124,10 @@ function App(): JSX.Element {
             messageBadge: messageBadge,
             setMessageBadge: setMessageBadge,
           }}>
+
           {authHeader != null && (
             <>
+
               <Stack.Navigator
                 initialRouteName="BottomTabs"
                 screenOptions={globalScreenOptions}>
